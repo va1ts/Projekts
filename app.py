@@ -97,38 +97,43 @@ def login():
 def dashboard():
     if 'user' not in session:
         return redirect(url_for('login'))
-    
+
     room_data = fetch_room_data()
-
-    # Sort rooms alphabetically by their name
     room_data.sort(key=lambda room: room['roomGroupName'])
-
-    # Remove rooms that already have a fan assigned
     available_rooms = [room for room in room_data if not any(fan['room'] == room['roomGroupName'] for fan in fan_assignments)]
 
-    # Add fan functionality
     if request.method == 'POST':
-        room_name = request.form['room']
+        room_name = request.form.get('room')
         
-        # Check if the room already has a fan assigned
+        if not room_name:
+            message = "Room selection is required."
+            return render_template('dashboard.html', rooms=room_data, fan_assignments=fan_assignments, message=message)
+        
         if any(fan['room'] == room_name for fan in fan_assignments):
             message = "Fan is already assigned to this room."
             return render_template('dashboard.html', rooms=room_data, fan_assignments=fan_assignments, message=message)
 
-        # Add fan with default OFF status
         fan_assignments.append({'room': room_name, 'status': 'OFF'})
 
-        # Recheck CO2 levels and update fan status immediately after adding the fan
         for fan in fan_assignments:
             for room in room_data:
                 if room["roomGroupName"] == fan['room']:
-                    # CO2 level check to update fan status
                     if room.get("co2", 0) > 1000:
                         fan['status'] = 'ON'
                     else:
                         fan['status'] = 'OFF'
 
         return render_template('dashboard.html', rooms=room_data, fan_assignments=fan_assignments)
+
+    for fan in fan_assignments:
+        for room in room_data:
+            if room["roomGroupName"] == fan['room']:
+                if room.get("co2", 0) > 1000:
+                    fan['status'] = 'ON'
+                else:
+                    fan['status'] = 'OFF'
+
+    return render_template('dashboard.html', rooms=available_rooms, fan_assignments=fan_assignments, message=None)
 
     # Check CO2 levels and update fan statuses based on the latest CO2 data
     for fan in fan_assignments:
