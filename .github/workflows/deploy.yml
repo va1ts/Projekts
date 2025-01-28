@@ -1,0 +1,26 @@
+name: Deploy to Raspberry Pi
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Copy files to Raspberry Pi
+      uses: appleboy/scp-action@v0.1.0
+      with:
+        host: ${{ secrets.PI_HOST }}
+        username: ${{ secrets.PI_USER }}
+        key: ${{ secrets.PI_SSH_KEY }}
+        source: "/*"
+        target: "/path/to/destination"
+
+    - name: Restart application
+      run: ssh -i ${{ secrets.PI_SSH_KEY }} ${{ secrets.PI_USER }}@${{ secrets.PI_HOST }} 'sudo systemctl restart your_application.service'
