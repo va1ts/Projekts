@@ -3,10 +3,12 @@ import requests
 import RPi.GPIO as GPIO
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
+import os
+import time
 
 # Initialize Flask app
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
+app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
 
 @app.route('/')
 def home():
@@ -26,22 +28,23 @@ fan_assignments = []
 
 # This function fetches room data from the given API endpoint
 def fetch_room_data(building_id="512"):
-    url = "https://co2.mesh.lv/api/device/list"  # Correct API endpoint
-    payload = {
-        "buildingId": building_id,
-        "captchaToken": None
-    }
-
+    url = "https://co2.mesh.lv/api/device/list"
+    payload = {"buildingId": building_id, "captchaToken": None}
     headers = {
-        'Content-Type': 'application/json',  # Ensure correct content type
-        'Accept': 'application/json',  # Accept JSON response
-        'User-Agent': 'Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',  # Optional: user-agent to match browser
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0'
     }
 
-    # Make a POST request with the payload and headers
-    response = requests.post(url, json=payload, headers=headers)
-
-    print(f"Response Status Code: {response.status_code}")  # Print status code
+    for _ in range(3):  # Retry up to 3 times
+        try:
+            response = requests.post(url, json=payload, headers=headers)
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            print(f"Request error: {e}")
+            time.sleep(1)
+    return []
 
 
     # Check if the request was successful and attempt to parse JSON
@@ -83,13 +86,11 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
-        # Check if user exists and password matches
         if username in users and check_password_hash(users[username], password):
-            session['user'] = username  # Store the username in the session
+            session['user'] = username
             return redirect(url_for('dashboard'))
         else:
-            return "Invalid credentials, please try again."
+            return render_template('login.html', error="Invalid credentials, please try again.")
     return render_template('login.html')
 
 # Dashboard route (to show room data and control the fan)
