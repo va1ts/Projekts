@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 from datetime import datetime
 
-conn = sqlite3.connect('db.sql')
+conn = sqlite3.connect('testing.sql')
 cursor = conn.cursor()
 
 def add_user(username, password, email):
