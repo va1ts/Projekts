@@ -100,28 +100,20 @@ def dashboard():
         for fan in fan_assignments:
             for room in room_data:
                 if room["roomGroupName"] == fan['room']:
+                    if 'manual' in fan and fan['manual']:
+                        continue  # Skip manual overrides
                     if room.get("co2", 0) > 1000:
                         fan['status'] = 'ON'
                         fan['co2_alert'] = True
+                        activate_fan()
                     else:
                         fan['status'] = 'OFF'
                         fan['co2_alert'] = False
+                        deactivate_fan()
 
         return render_template('dashboard.html', rooms=room_data, fan_assignments=fan_assignments)
 
-    for fan in fan_assignments:
-        for room in room_data:
-            if room["roomGroupName"] == fan['room']:
-                if 'manual' in fan and fan['manual']:
-                    continue  # Skip manual overrides
-                if room.get("co2", 0) > 1000:
-                    fan['status'] = 'ON'
-                    fan['co2_alert'] = True
-                    activate_fan()
-                else:
-                    fan['status'] = 'OFF'
-                    fan['co2_alert'] = False
-                    deactivate_fan()
+                    
 
 
 
