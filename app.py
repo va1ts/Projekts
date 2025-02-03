@@ -57,11 +57,11 @@ def fetch_room_data(building_id="512"):
 
 # Function to handle fan activation
 def activate_fan():
-    #GPIO.output(fan_pin, GPIO.HIGH)  # Turn on fan
+    GPIO.output(fan_pin, GPIO.HIGH)  # Turn on fan
     print("Fan activated.")
 
 def deactivate_fan():
-    #GPIO.output(fan_pin, GPIO.LOW)  # Turn off fan
+    GPIO.output(fan_pin, GPIO.LOW)  # Turn off fan
     print("Fan deactivated.")
 
 # Registration route
@@ -138,7 +138,33 @@ def dashboard():
 
     return render_template('dashboard.html', rooms=available_rooms, fan_assignments=fan_assignments, message=None)
 
+# New route to control the fan
+@app.route('/control_fan', methods=['POST'])
+def control_fan():
+    if 'user' not in session:
+        return redirect(url_for('login'))
 
+    room_name = request.form.get('room')
+    new_status = request.form.get('status')
+
+    if not room_name or not new_status:
+        return "Room and status are required.", 400
+
+    # Find the fan assignment for the specified room
+    for fan in fan_assignments:
+        if fan['room'] == room_name:
+            fan['status'] = new_status.upper()  # Ensure status is in uppercase (ON/OFF)
+            break
+    else:
+        return "Fan not found for the specified room.", 404
+
+    # Activate or deactivate the fan based on the new status
+    if new_status.upper() == 'ON':
+        activate_fan()
+    elif new_status.upper() == 'OFF':
+        deactivate_fan()
+
+    return redirect(url_for('dashboard'))
 
 # Run the Flask app
 if __name__ == '__main__':
