@@ -117,9 +117,11 @@ def dashboard():
                 if room.get("co2", 0) > 1000:
                     fan['status'] = 'ON'
                     fan['co2_alert'] = True
+                    activate_fan()
                 else:
                     fan['status'] = 'OFF'
                     fan['co2_alert'] = False
+                    deactivate_fan()
 
 
 
