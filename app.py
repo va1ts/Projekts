@@ -120,8 +120,10 @@ def dashboard():
                 if room["roomGroupName"] == fan['room']:
                     if room.get("co2", 0) > 1000:
                         fan['status'] = 'ON'
+                        fan['co2_alert'] = True  # Set CO2 alert if CO2 is above threshold
                     else:
                         fan['status'] = 'OFF'
+                        fan['co2_alert'] = False # Clear CO2 alert if CO2 is below threshold
 
         return render_template('dashboard.html', rooms=room_data, fan_assignments=fan_assignments)
 
@@ -133,8 +135,11 @@ def dashboard():
                 # CO2 level check to update fan status
                 if room.get("co2", 0) > 1000:
                     fan['status'] = 'ON'
+                    fan['co2_alert'] = True  # Alert if CO2 is above the threshold
                 else:
                     fan['status'] = 'OFF'
+                    fan['co2_alert'] = False # Clear alert if CO2 is below the threshold
+    
     # Preserve manual status change (if any) by skipping fans that were manually set
     for fan in fan_assignments:
         if 'manual' in fan and fan['manual']:  # If fan was manually set, skip auto CO2 control
@@ -174,6 +179,3 @@ def control_fan():
 if __name__ == '__main__':
     users['admin'] = generate_password_hash('123', method='sha256')
     app.run(debug=True, host='0.0.0.0', port=5001)
-
-#lets try it again
-#for the 100th time

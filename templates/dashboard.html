@@ -24,6 +24,10 @@
             background-color: red;
             color: white;
         }
+        .alert {
+            background-color: yellow;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -53,6 +57,7 @@
                 <th>Fan #</th>
                 <th>Room</th>
                 <th>Status</th>
+                <th>CO2 Alert</th> <!-- New column -->
                 <th>Action</th>
             </tr>
         </thead>
@@ -63,6 +68,13 @@
                     <td>{{ fan['room'] }}</td>
                     <td class="{{ 'on' if fan['status'] == 'ON' else 'off' }}">
                         {{ fan['status'] }}
+                    </td>
+                    <td class="{{ 'alert' if fan['co2_alert'] else '' }}">
+                        {% if fan['co2_alert'] %}
+                            CO2 levels exceed limit! Turn on fan.
+                        {% else %}
+                            CO2 levels are fine.
+                        {% endif %}
                     </td>
                     <td>
                         <form method="POST" action="{{ url_for('control_fan') }}">
