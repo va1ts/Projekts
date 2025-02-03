@@ -16,29 +16,38 @@ def get_db_connection():
 
 # Function to add a user
 def add_user(username, password, email):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-    INSERT INTO users (username, password, email)
-    VALUES (?, ?, ?)
-    """, (username, password, email))
-    conn.commit()
-    conn.close()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+        INSERT INTO users (username, password, email)
+        VALUES (?, ?, ?)
+        """, (username, password, email))
+        conn.commit()
+        conn.close()
+        print(f"User {username} added successfully.")
+    except Exception as e:
+        print(f"Error adding user: {e}")
 
 # Create the users table if it doesn't exist
-conn = get_db_connection()
-cursor = conn.cursor()
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL,
-    email TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
-""")
-conn.commit()
-conn.close()
+def create_users_table():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL,
+            email TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """)
+        conn.commit()
+        conn.close()
+        print("Users table created successfully.")
+    except Exception as e:
+        print(f"Error creating users table: {e}")
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -95,12 +104,11 @@ def register():
             username = request.form['username']
             password = request.form['password']
             email = request.form['email']
+            hashed_password = generate_password_hash(password, method='sha256')
+            add_user(username, hashed_password, email)
+            return redirect(url_for('login'))
         except KeyError as e:
             return f"Missing form data: {e}", 400
-        
-        hashed_password = generate_password_hash(password, method='sha256')
-        add_user(username, hashed_password, email)
-        return redirect(url_for('login'))
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -180,6 +188,5 @@ def control_fan():
     return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
-    # Ensure that admin user exists
-    add_user('admin', generate_password_hash('123', method='sha256'), 'admin@example.com')
+    create_users_table()
     app.run(debug=True, host='0.0.0.0', port=5001)
