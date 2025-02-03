@@ -174,3 +174,5 @@ def control_fan():
 if __name__ == '__main__':
     users['admin'] = generate_password_hash('123', method='sha256')
     app.run(debug=True, host='0.0.0.0', port=5001)
+
+#lets try it again
