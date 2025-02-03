@@ -27,6 +27,11 @@
         .alert {
             background-color: yellow;
             font-weight: bold;
+            color: red;
+        }
+        .alert-message {
+            font-size: 14px;
+            color: red;
         }
     </style>
 </head>
@@ -57,7 +62,7 @@
                 <th>Fan #</th>
                 <th>Room</th>
                 <th>Status</th>
-                <th>CO2 Alert</th> <!-- New column -->
+                <th>CO2 Alert</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -71,7 +76,7 @@
                     </td>
                     <td class="{{ 'alert' if fan['co2_alert'] else '' }}">
                         {% if fan['co2_alert'] %}
-                            CO2 levels exceed limit! Turn on fan.
+                            <span class="alert-message">CO2 levels exceed limit! Turn on fan.</span>
                         {% else %}
                             CO2 levels are fine.
                         {% endif %}
