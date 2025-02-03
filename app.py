@@ -135,6 +135,11 @@ def dashboard():
                     fan['status'] = 'ON'
                 else:
                     fan['status'] = 'OFF'
+    # Preserve manual status change (if any) by skipping fans that were manually set
+    for fan in fan_assignments:
+        if 'manual' in fan and fan['manual']:  # If fan was manually set, skip auto CO2 control
+            continue
+
 
     return render_template('dashboard.html', rooms=available_rooms, fan_assignments=fan_assignments, message=None)
 
@@ -152,11 +157,10 @@ def control_fan():
 
     # Find the fan assignment for the specified room
     for fan in fan_assignments:
-        if fan['room'] == room_name:
-            fan['status'] = new_status.upper()  # Ensure status is in uppercase (ON/OFF)
-            break
-    else:
-        return "Fan not found for the specified room.", 404
+    if fan['room'] == room_name:
+        fan['status'] = new_status.upper()
+        fan['manual'] = True  # Mark this fan as manually set
+
 
     # Activate or deactivate the fan based on the new status
     if new_status.upper() == 'ON':
