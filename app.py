@@ -178,3 +178,4 @@ if __name__ == '__main__':
 #sis projekts ir masivs suds
 #ja sitas aizies tad tas ir 8 pasaules brinums lol
 #labi es ceru ka aizies
+#redzes vai pec minutes kaut kas mainijas
