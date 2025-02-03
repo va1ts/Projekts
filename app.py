@@ -15,7 +15,7 @@ def home():
 
 
 
-fan_pin = 18
+fan = OutputDevice(18)
 
 
 
@@ -56,9 +56,11 @@ def fetch_room_data(building_id="512"):
         return [] 
 
 def activate_fan():
+    fan.on()
     print("Fan activated.")
 
 def deactivate_fan():
+    fan.off()
     print("Fan deactivated.")
 
 
