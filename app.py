@@ -5,6 +5,18 @@ from gpiozero.pins.mock import MockFactory
 from gpiozero import Device
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
+import sqlite3
+from datetime import datetime
+
+conn = sqlite3.connect('db.sql')
+cursor = conn.cursor()
+
+def add_user(username, password, email):
+    cursor.execute("""
+    INSERT INTO users (username, password, email)
+    VALUES (?, ?, ?)
+    """, (username, password, email))
+    conn.commit()
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -145,3 +157,5 @@ def control_fan():
 if __name__ == '__main__':
     users['admin'] = generate_password_hash('123', method='sha256')
     app.run(debug=True, host='0.0.0.0', port=5001)
+
+conn.close()
