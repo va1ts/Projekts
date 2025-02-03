@@ -8,15 +8,37 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 from datetime import datetime
 
-conn = sqlite3.connect('testing.sql')
-cursor = conn.cursor()
+# Initialize database connection
+def get_db_connection():
+    conn = sqlite3.connect('testing.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
+# Function to add a user
 def add_user(username, password, email):
+    conn = get_db_connection()
+    cursor = conn.cursor()
     cursor.execute("""
     INSERT INTO users (username, password, email)
     VALUES (?, ?, ?)
     """, (username, password, email))
     conn.commit()
+    conn.close()
+
+# Create the users table if it doesn't exist
+conn = get_db_connection()
+cursor = conn.cursor()
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    email TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+""")
+conn.commit()
+conn.close()
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -30,7 +52,6 @@ def home():
 
 fan = OutputDevice(18)
 
-users = {}
 fan_assignments = []
 
 def fetch_room_data(building_id="512"):
@@ -72,8 +93,9 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        email = request.form['email']
         hashed_password = generate_password_hash(password, method='sha256')
-        users[username] = hashed_password
+        add_user(username, hashed_password, email)
         return redirect(url_for('login'))
     return render_template('register.html')
 
@@ -82,7 +104,12 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        if username in users and check_password_hash(users[username], password):
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+        user = cursor.fetchone()
+        conn.close()
+        if user and check_password_hash(user['password'], password):
             session['user'] = username
             return redirect(url_for('dashboard'))
         else:
@@ -107,27 +134,21 @@ def dashboard():
             message = "Fan is already assigned to this room."
             return render_template('dashboard.html', rooms=room_data, fan_assignments=fan_assignments, message=message)
 
-        fan_assignments.append({'room': room_name, 'status': 'OFF'})
+        fan_assignments.append({'room': room_name, 'status': 'OFF', 'manual': False})
 
-        for fan in fan_assignments:
-            for room in room_data:
-                if room["roomGroupName"] == fan['room']:
-                    if 'manual' in fan and fan['manual']:
-                        continue  # Skip manual overrides
-                    if room.get("co2", 0) > 1000:
-                        fan['status'] = 'ON'
-                        fan['co2_alert'] = True
-                        activate_fan()
-                    else:
-                        fan['status'] = 'OFF'
-                        fan['co2_alert'] = False
-                        deactivate_fan()
-
-        return render_template('dashboard.html', rooms=room_data, fan_assignments=fan_assignments)
-
-                    
-
-
+    for fan in fan_assignments:
+        for room in room_data:
+            if room["roomGroupName"] == fan['room']:
+                if 'manual' in fan and fan['manual']:
+                    continue  # Skip manual overrides
+                if room.get("co2", 0) > 1000:
+                    fan['status'] = 'ON'
+                    fan['co2_alert'] = True
+                    activate_fan()
+                else:
+                    fan['status'] = 'OFF'
+                    fan['co2_alert'] = False
+                    deactivate_fan()
 
     return render_template('dashboard.html', rooms=available_rooms, fan_assignments=fan_assignments, message=None)
 
@@ -155,7 +176,6 @@ def control_fan():
     return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
-    users['admin'] = generate_password_hash('123', method='sha256')
+    # Ensure that admin user exists
+    add_user('admin', generate_password_hash('123', method='sha256'), 'admin@example.com')
     app.run(debug=True, host='0.0.0.0', port=5001)
-
-conn.close()
