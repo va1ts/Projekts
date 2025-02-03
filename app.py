@@ -21,7 +21,7 @@ fan_pin = 18
 # Example user database (in-memory, for simplicity)
 users = {}
 
-# Change fan_assignments to be a list instead of a dictionary
+# Change fan_assignments to be a list instead of a dictionarycccccc
 fan_assignments = []
 
 # This function fetches room data from the given API endpoint
@@ -57,11 +57,11 @@ def fetch_room_data(building_id="512"):
 
 # Function to handle fan activation
 def activate_fan():
-    GPIO.output(fan_pin, GPIO.HIGH)  # Turn on fan
+    #GPIO.output(fan_pin, GPIO.HIGH)  # Turn on fan
     print("Fan activated.")
 
 def deactivate_fan():
-    GPIO.output(fan_pin, GPIO.LOW)  # Turn off fan
+    #GPIO.output(fan_pin, GPIO.LOW)  # Turn off fan
     print("Fan deactivated.")
 
 # Registration route

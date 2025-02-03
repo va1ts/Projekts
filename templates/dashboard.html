@@ -29,12 +29,10 @@
 <body>
     <h1>Dashboard</h1>
 
-    <!-- Show message if there is one -->
     {% if message %}
         <p style="color: red;">{{ message }}</p>
     {% endif %}
 
-    <!-- Form to add a fan -->
     <h2>Assign Fan to Room</h2>
     <form method="POST">
         <label for="room">Select Room:</label>
@@ -48,7 +46,6 @@
 
     <br>
 
-    <!-- Display assigned fans in a table -->
     <h2>Assigned Fans</h2>
     <table>
         <thead>
@@ -56,6 +53,7 @@
                 <th>Fan #</th>
                 <th>Room</th>
                 <th>Status</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -65,6 +63,13 @@
                     <td>{{ fan['room'] }}</td>
                     <td class="{{ 'on' if fan['status'] == 'ON' else 'off' }}">
                         {{ fan['status'] }}
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('control_fan') }}">
+                            <input type="hidden" name="room" value="{{ fan['room'] }}">
+                            <button type="submit" name="status" value="ON">Turn ON</button>
+                            <button type="submit" name="status" value="OFF">Turn OFF</button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}
