@@ -125,15 +125,6 @@ def dashboard():
 
         return render_template('dashboard.html', rooms=room_data, fan_assignments=fan_assignments)
 
-    for fan in fan_assignments:
-        for room in room_data:
-            if room["roomGroupName"] == fan['room']:
-                if room.get("co2", 0) > 1000:
-                    fan['status'] = 'ON'
-                else:
-                    fan['status'] = 'OFF'
-
-    return render_template('dashboard.html', rooms=available_rooms, fan_assignments=fan_assignments, message=None)
 
     # Check CO2 levels and update fan statuses based on the latest CO2 data
     for fan in fan_assignments:
