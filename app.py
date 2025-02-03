@@ -157,9 +157,9 @@ def control_fan():
 
     # Find the fan assignment for the specified room
     for fan in fan_assignments:
-    if fan['room'] == room_name:
-        fan['status'] = new_status.upper()
-        fan['manual'] = True  # Mark this fan as manually set
+        if fan['room'] == room_name:
+            fan['status'] = new_status.upper()
+            fan['manual'] = True  # Mark this fan as manually set
 
 
     # Activate or deactivate the fan based on the new status
