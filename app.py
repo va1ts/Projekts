@@ -160,18 +160,18 @@ def control_fan():
     if not room_name or not new_status:
         return "Room and status are required.", 400
 
-    # Find the fan assignment for the specified room
+        # Find the fan assignment for the specified room
     for fan in fan_assignments:
         if fan['room'] == room_name:
             fan['status'] = new_status.upper()
             fan['manual'] = True  # Mark this fan as manually set
 
 
-    # Activate or deactivate the fan based on the new status
-    if new_status.upper() == 'ON':
-        activate_fan()
-    elif new_status.upper() == 'OFF':
-        deactivate_fan()
+        # Activate or deactivate the fan based on the new status
+        if new_status.upper() == 'ON':
+            activate_fan()
+        elif new_status.upper() == 'OFF':
+            deactivate_fan()
 
     return redirect(url_for('dashboard'))
 
