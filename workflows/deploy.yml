@@ -1,0 +1,31 @@
+name: Deploy to Raspberry Pi
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Copy files via SSH
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.RPI_HOST }}
+        username: ${{ secrets.RPI_USER }}
+        key: ${{ secrets.RPI_KEY }}
+        source: "."
+        target: "/home/izm/projekts2"
+
+    - name: Restart Flask app
+      run: |
+        ssh -i ${{ secrets.RPI_KEY }} ${{ secrets.RPI_USER }}@${{ secrets.RPI_HOST }} << 'EOF'
+        pkill -f app.py
+        cd /home/izm/projekts2
+        python app.py &
+        EOF
