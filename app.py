@@ -91,9 +91,13 @@ def deactivate_fan():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        email = request.form['email']
+        try:
+            username = request.form['username']
+            password = request.form['password']
+            email = request.form['email']
+        except KeyError as e:
+            return f"Missing form data: {e}", 400
+        
         hashed_password = generate_password_hash(password, method='sha256')
         add_user(username, hashed_password, email)
         return redirect(url_for('login'))
